@@ -1,7 +1,7 @@
 'use strict';
 
 var express = require('express');
-var controller = require('./train.controller');
+var controller = require('./trainRoutes.controller');
 var router = express.Router();
 
 router.get('/', controller.index);
