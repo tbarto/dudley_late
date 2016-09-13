@@ -6,7 +6,7 @@ module.exports = {
 
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/ttime-dev'
+    uri: process.env.MONGO_URL || 'mongodb://localhost/ttime-dev'
   },
 
   // Seed database on startup
