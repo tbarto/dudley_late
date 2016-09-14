@@ -23,10 +23,14 @@ function fetchLateness(fromStop, toStop, fromDatetime, toDatetime) {
         reject('No travel times found');
       }
 
-      const travelTime = _.first(travelTimes); // XXX randomly picking the first
-      const lateness = _.parseInt(travelTime.travel_time_sec) -
-        _.parseInt(travelTime.benchmark_travel_time_sec);
-      resolve({ fromStop, toStop, lateness });
+      const latenesses = _.map(travelTimes, (travelTime) => {
+        return _.parseInt(travelTime.travel_time_sec) -
+          _.parseInt(travelTime.benchmark_travel_time_sec);
+      });
+
+      // give student benefit of the doubt and assign them the
+      // most-delayed train in the date range
+      resolve({ fromStop, toStop, lateness: _.max(latenesses) });
     });
   });
 }
