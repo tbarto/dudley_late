@@ -21,7 +21,7 @@ angular.module('tTimeApp')
       .state('signup', {
         url: '/signup',
         templateUrl: 'app/account/signup/signup.html',
-        controller: 'SignupController',
+        controller: 'signUpController',
         controllerAs: 'vm'
       })
       .state('settings', {
