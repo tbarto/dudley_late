@@ -1,10 +1,30 @@
 /**
 
-  This script does the following:
-  1. Looks in your user collection to see the from-stops and to-stops
-  2. Calculates an array of distinct from-stop to-stop pairs
-  3. Hits the MBTA API for each of these pairs to determine train delays
-  4. Persists the results back into another mongo collection TBD TODO
+  Required inputs:
+  1. For each student a list of their routes (an array of from-stop to-stop pairs)
+  2. For each student a journey start time that's been verified by a human as
+    being reasonable given their commute.
+  3. For each possible final destination to the school, a hard-stop time representing
+    the latest a student can arrive and still get to school on time.
+  4. MBTA API that returns timing of trains/busses on routes given from-stop, to-stop,
+    and time range.
+
+  Algorithm as follows:
+  1. Look in the user collection to see their routes and their journey start time
+  Then for each user...
+  2. Looks at the first leg, with a window 30 minutes before the journey start time
+    up to the journey start time
+  3. Pings MBTA (possibly cache-ing responses to avoid over-pinging)
+  4. Determines the worst-case arrival at their first transfer station
+  5. Looks at the second leg, with a window 30 minutes before the worst-case
+    arrival time to 5 minutes after (to account for the walk across the station)
+  6. Pings MBTA to determine the worst-case arrival time for that leg
+  7. Repeat for all legs to determine the worst-case arrival time to the destination station
+  8. Compares the worst-case arrival time to the hard-stop time for that station
+    to determine the lateness in minutes that the student is entitled to
+  9. Persists the results back into another mongo collection
+
+  TODO: actually implement this algorithm
 
   Run it like this on a cron:
   $ npm run fetch-lateness
@@ -22,11 +42,18 @@ const db = mongoose.connect(config.mongo.uri, config.mongo.options);
 
 const mockUsers = [
   {
-    stops: [{ stop_id: 70172 }, { stop_id: 70182 }]
-  },
-  {
-    stops: [{ stop_id: 70172 }, { stop_id: 70182 }]
+    journey_start_time: "6:30",
+    stops: [
+      { from_stop_id: 70172, to_stop_id: 70182 },
+      { walking_time_minutes: 10 },
+      { from_stop_id: 70182, to_stop_id: 12345 }
+    ]
   }
+];
+
+const mockDestinations = [
+  { stop_id: 12345, hard_stop_time: "7:50" },
+  { stop_id: 12347, hard_stop_time: "7:54" }
 ];
 
 //
