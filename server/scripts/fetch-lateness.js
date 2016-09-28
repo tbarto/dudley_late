@@ -17,7 +17,8 @@
   3. Pings MBTA (possibly cache-ing responses to avoid over-pinging)
   4. Determines the worst-case arrival at their first transfer station
   5. Looks at the second leg, with a window 30 minutes before the worst-case
-    arrival time to 5 minutes after (to account for the walk across the station)
+    arrival time to *the first train that arrives after*
+    5 minutes after (to account for the walk across the station)
   6. Pings MBTA to determine the worst-case arrival time for that leg
   7. Repeat for all legs to determine the worst-case arrival time to the destination station
   8. Compares the worst-case arrival time to the hard-stop time for that station
@@ -37,24 +38,20 @@ const request = require('request');
 const mongoose = require('mongoose');
 const apiKey = require('../config/local.env').apiKey;
 const config = require('../config/environment/development');
-import User from '../api/user/user.model';
+const User = require('../api/user/user.model').default;
 const db = mongoose.connect(config.mongo.uri, config.mongo.options);
+require("babel-polyfill");
 
-const mockUsers = [
-  {
-    journey_start_time: "6:30",
-    stops: [
-      { from_stop_id: 70172, to_stop_id: 70182 },
-      { walking_time_minutes: 10 },
-      { from_stop_id: 70182, to_stop_id: 12345 }
-    ]
-  }
-];
+const defaultStationWalkingTime = 5 * 60 * 1000;
 
 const mockDestinations = [
   { stop_id: 12345, hard_stop_time: "7:50" },
   { stop_id: 12347, hard_stop_time: "7:54" }
 ];
+
+// use the same broad time window to MBTA for better cacheing
+const morningStart = new Date().setHours(5, 0, 0, 0);
+const morningEnd = new Date().setHours(9, 0, 0, 0);
 
 //
 // Step 1: Fetch users
@@ -68,89 +65,88 @@ function fetchUsers() {
       }
 
       resolve(_.map(users, (user) => {
-        return _.pick(user, ['name', 'school', 'stops']);
+        return _.pick(user, ['name', 'school', 'stops', 'journey_start_time']);
       }));
     });
   });
 }
 
 //
-// Step 2: Calculate distinct routes
-//
-function calculateDistinctRoutes(users) {
-  const routes = _.map(users, (user) => {
-    return {
-      fromStop: user.stops[0].stop_id,
-      toStop: user.stops[1].stop_id
-    };
-  });
-
-  return _.uniqBy(routes, ["fromStop", "toStop"]);
-}
-
-//
 // Step 3: Hit the MBTA API to determine train delays
 //
 const urlRoot = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes';
-function fetchLateness(fromStop, toStop, fromDatetime, toDatetime) {
+function fetchLateness(stop, fromDatetime, toDatetime) {
   return new Promise((resolve, reject) => {
+    if (stop.walking_time_minutes) {
+      resolve(toDatetime + (stop.walking_time_minutes * 60 * 1000));
+      return;
+    }
+
     const query = {
       api_key: apiKey,
       format: 'json',
-      from_stop: fromStop,
-      to_stop: toStop,
-      from_datetime: fromDatetime,
-      to_datetime: toDatetime
+      from_stop: stop.from_stop_id,
+      to_stop: stop.to_stop_id,
+      from_datetime: morningStart,
+      to_datetime: morningEnd
     };
 
+    // TODO: look in the cache
+
     const url = `${urlRoot}?${qs.stringify(query)}`;
+    // TODO: query a larger window that we're going to look at,
+    // and we have to consider the first train that arrives more than
+    // 5 minutes after the worst-case time
     request(url, (err, response, body) => {
       const travelTimes = JSON.parse(body).travel_times;
       if (_.isEmpty(travelTimes)) {
-        // XXX or maybe it's ok if there were no routes returned
+        // XXX uhoh
         reject('No travel times found');
       }
+      // TODO: add to the cache
 
-      const latenesses = _.map(travelTimes, (travelTime) => {
-        return _.parseInt(travelTime.travel_time_sec) -
-          _.parseInt(travelTime.benchmark_travel_time_sec);
+      const routesAfterWindow = _.filter(travelTimes, (route) => {
+        const startTime = _.parseInt(route.dep_dt);
+        return startTime >= toDatetime;
       });
-
-      // give student benefit of the doubt and assign them the
-      // most-delayed train in the date range
-      resolve({ fromStop, toStop, lateness: _.max(latenesses) });
+      const firstArrivalTimeAfterWindow = _.min(_.map(routesAfterWindow, (route) => {
+        return _.parseInt(route.dep_dt);
+      }));
+      const applicableRoutes = _.filter(travelTimes, (route) => {
+        const startTime = _.parseInt(route.dep_dt);
+        return startTime >= fromDatetime && startTime <= firstArrivalTimeAfterWindow;
+      });
+      const lastArrival = _.max(_.map(applicableRoutes, (time) => _.parseInt(time.arr_dt)));
+      resolve(lastArrival + defaultStationWalkingTime);
     });
-  });
-}
-
-//
-// Step 4: Persist the results back to mongo
-//
-function persistDelays(delays) {
-  return new Promise((resolve, reject) => {
-    // TODO: need a delays collection
-    console.log("TODO: persist delays", delays);
-    resolve();
   });
 }
 
 function run() {
-  co (function *() {
-    const startTime = 1457454139; // TODO: calculate this
-    const endTime = 1457455262; // TODO: calculate this
-    let users = yield fetchUsers();
-    users = mockUsers; // XXX surprise!
-    const routes = calculateDistinctRoutes(users);
-    const delays = yield _.map(routes, (route) => {
-      return fetchLateness(route.fromStop, route.toStop, startTime, endTime);
+  return new Promise((resolve, reject) => {
+    co (function *() {
+      const users = yield fetchUsers();
+      const arrivalTimes = [];
+      for (const user of users) {
+        const journeyStart = user.journey_start_time;
+        const [journeyStartHours, journeyStartMinutes] = journeyStart.split(":");
+        let windowEndMillis = new Date().setHours(journeyStartHours, journeyStartMinutes, 0, 0);
+        let windowStartMillis = windowEndMillis - (1000 * 60 * 30);
+        for (const stop of user.stops) {
+          windowEndMillis = yield fetchLateness(stop, windowStartMillis, windowEndMillis);
+          windowStartMillis = windowEndMillis - (1000 * 60 * 30);
+        }
+        arrivalTimes.push({ name: user.name, arrivalTime: windowEndMillis });
+      }
+      db.disconnect();
+      resolve(arrivalTimes);
+    }).catch((error) => {
+      console.error("error", error);
+      db.disconnect();
+      reject(error);
     });
-    yield persistDelays(delays);
-    db.disconnect();
-    console.log("ok done");
-  }).catch((error) => {
-    console.error(error);
-    db.disconnect();
   });
 }
 
-run();
+exports.fetchLateness = fetchLateness;
+exports.run = run;
