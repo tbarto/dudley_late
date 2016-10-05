@@ -50,8 +50,8 @@ const mockDestinations = [
 ];
 
 // use the same broad time window to MBTA for better cacheing
-const morningStart = new Date().setHours(5, 0, 0, 0);
-const morningEnd = new Date().setHours(9, 0, 0, 0);
+const morningStart = new Date().setHours(5, 0, 0, 0) / 1000;
+const morningEnd = new Date().setHours(9, 0, 0, 0) / 1000;
 
 //
 // Step 1: Fetch users
