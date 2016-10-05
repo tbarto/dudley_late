@@ -38,12 +38,12 @@ const mongooseMock = {
 
 const mockUsers = [
   {
-    name: "John X",
+    name: "Roslindale Jack",
     journey_start_time: "6:30",
     stops: [
-      { from_stop_id: 70172, to_stop_id: 70182 },
-      { walking_time_minutes: 10 },
-      { from_stop_id: 70182, to_stop_id: 12345 }
+      { from_stop_id: 635, to_stop_id: 10642 },
+      { from_stop_id: 70001, to_stop_id: 70011 },
+      { from_stop_id: 17863, to_stop_id: 1488 }
     ]
   }
 ];
