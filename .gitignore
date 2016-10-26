@@ -8,3 +8,4 @@ npm-debug.log
 coverage
 data
 q
+server/config/local.env.js
