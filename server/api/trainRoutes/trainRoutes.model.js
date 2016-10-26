@@ -7,6 +7,7 @@ const StopSchema = new mongoose.Schema({
   stop_id: String,
   stop_name: String
 });
+
 var TrainSchema = new mongoose.Schema({
   route: String,
   mode: String,

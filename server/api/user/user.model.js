@@ -33,6 +33,12 @@ var UserSchema = new Schema({
     type: String,
     required: true
   },
+  lateTime : {
+    type: Number
+  },
+  lateComments : {
+    type: Array
+  },
   provider: String,
   salt: String
 });

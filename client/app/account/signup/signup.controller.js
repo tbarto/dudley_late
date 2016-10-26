@@ -5,25 +5,27 @@
 
     //end-non-standard
 
-    constructor(Auth, $state, $http) {
+    constructor(Auth, $state, TrainRoutes) {
       this.Auth = Auth;
       this.$state = $state;
-      this.$http = $http;
       this.stopData = [];
       // ToDo this needs to be added as a collection
       this.schools = ['School 1', 'School 2', 'School 3'];
       this.stops = [];
       this.modes = [];
       this.selectedMode = "Bus";
-      this.$http.get('api/trainRoutes').then(result => {
-          this.stops = result.data;
-          // console.log(this.stops);
-          _.forEach(this.stops, stop => {
-              this.modes.push(stop.mode);
-          });
-          this.modes = _.uniq(this.modes);
-          console.log(this.modes);
-      })
+      this.selectedLine = "CT1";
+      TrainRoutes.query().$promise.then(data => {
+        this.trainRoutes = data;
+      });
+      // this.$http.get('api/trainRoutes').then(result => {
+      //     this.stops = result.data;
+      //     console.log(this.stops);
+      //     _.forEach(this.stops, stop => {
+      //         this.modes.push(stop.mode);
+      //     });
+      //     this.modes = _.uniq(this.modes);
+      // })
     }
 
     register(form) {

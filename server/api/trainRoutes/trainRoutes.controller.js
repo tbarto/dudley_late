@@ -64,7 +64,7 @@ function handleError(res, statusCode) {
 
 // Gets a list of Trains
 export function index(req, res) {
-  return TrainRoute.find().exec()
+  return TrainRoute.find().lean().exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
