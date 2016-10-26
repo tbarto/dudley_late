@@ -35,6 +35,7 @@ const _ = require('lodash');
 const qs = require('qs');
 const co = require('co');
 const request = require('request');
+const moment = require('moment');
 const mongoose = require('mongoose');
 const apiKey = require('../config/local.env').apiKey;
 const config = require('../config/environment/development');
@@ -50,8 +51,8 @@ const mockDestinations = [
 ];
 
 // use the same broad time window to MBTA for better cacheing
-const morningStart = new Date().setHours(5, 0, 0, 0) / 1000;
-const morningEnd = new Date().setHours(9, 0, 0, 0) / 1000;
+const morningStart = new Date().setHours(5, 0, 0, 0);
+const morningEnd = new Date().setHours(9, 0, 0, 0);
 
 //
 // Step 1: Fetch users
@@ -106,23 +107,39 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
       // TODO: add to the cache
 
       const routesAfterWindow = _.filter(travelTimes, (route) => {
-        const startTime = _.parseInt(route.dep_dt);
+        const startTime = _.parseInt(route.dep_dt) * 1000;
         return startTime >= toDatetime;
       });
-      const firstArrivalTimeAfterWindow = _.min(_.map(routesAfterWindow, (route) => {
-        return _.parseInt(route.dep_dt);
+      const firstDepartureTimeAfterWindow = _.min(_.map(routesAfterWindow, (route) => {
+        return _.parseInt(route.dep_dt * 1000);
       }));
+      // console.log(`Student might have taken the ${formattedDepart} train`);
+
       const applicableRoutes = _.filter(travelTimes, (route) => {
-        const startTime = _.parseInt(route.dep_dt);
-        return startTime >= fromDatetime && startTime <= firstArrivalTimeAfterWindow;
+        const startTime = _.parseInt(route.dep_dt * 1000);
+        return startTime >= fromDatetime && startTime <= firstDepartureTimeAfterWindow;
       });
+      const lastArrivalRoute = _.last(_.sortBy(applicableRoutes,
+        (time) => _.parseInt(time.arr_dt))
+      );
+      const formattedDepart = moment(lastArrivalRoute.dep_dt * 1000).format("h:mm");
+      const formattedArrival = moment(lastArrivalRoute.arr_dt * 1000).format("h:mm");
+      const lateness = _.parseInt(lastArrivalRoute.travel_time_sec) -
+        _.parseInt(lastArrivalRoute.benchmark_travel_time_sec);
+      const latenessMessage = lateness < 0 ?
+        "on time" :
+        `${_.parseInt(lateness / 60)} minutes late`;
+      const message = `The ${formattedDepart} from ${stop.from_stop_id} was ${latenessMessage} ` +
+        `and arrived at ${formattedArrival}`;
+
+      console.log(message);
       const lastArrival = _.max(_.map(applicableRoutes, (time) => _.parseInt(time.arr_dt)));
       resolve(lastArrival + defaultStationWalkingTime);
     });
   });
 }
 
-function run() {
+function run(dateString) {
   return new Promise((resolve, reject) => {
     co (function *() {
       const users = yield fetchUsers();
@@ -130,7 +147,11 @@ function run() {
       for (const user of users) {
         const journeyStart = user.journey_start_time;
         const [journeyStartHours, journeyStartMinutes] = journeyStart.split(":");
-        let windowEndMillis = new Date().setHours(journeyStartHours, journeyStartMinutes, 0, 0);
+        const date = dateString ? new Date(dateString) : new Date();
+        const windowEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(),
+          journeyStartHours, journeyStartMinutes, 0);
+        let windowEndMillis = windowEnd.getTime();
+        console.log("start end window", windowEndMillis, windowEnd.toString());
         let windowStartMillis = windowEndMillis - (1000 * 60 * 30);
         for (const stop of user.stops) {
           windowEndMillis = yield fetchLateness(stop, windowStartMillis, windowEndMillis);
