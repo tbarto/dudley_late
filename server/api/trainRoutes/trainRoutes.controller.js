@@ -1,18 +1,17 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/Trains              ->  index
- * POST    /api/Trains              ->  create
- * GET     /api/Trains/:id          ->  show
- * PUT     /api/Trains/:id          ->  update
- * DELETE  /api/Trains/:id          ->  destroy
+ * GET     /api/TrainRoutes         ->  index
+ * POST    /api/TrainRoutes         ->  create
+ * GET     /api/TrainRoutes/:id     ->  show
+ * PUT     /api/TrainRoutes/:id     ->  update
+ * DELETE  /api/TrainRoutes/:id     ->  destroy
  */
 
 'use strict';
 
 import _ from 'lodash';
-import Train from './train.model';
+import TrainRoute from './trainRoutes.model';
 var request = require('request');
-var config = require('../../config/local.env');
 
 // Runs everyday to get the UTC times for
 // function getUtcTimes(day):
@@ -65,14 +64,14 @@ function handleError(res, statusCode) {
 
 // Gets a list of Trains
 export function index(req, res) {
-  return Train.find().exec()
+  return TrainRoute.find().lean().exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
 // Gets a single Train from the DB
 export function show(req, res) {
-  return Train.findById(req.params.id).exec()
+  return TrainRoute.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
@@ -80,7 +79,7 @@ export function show(req, res) {
 
 // Creates a new Train in the DB
 export function create(req, res) {
-  return Train.create(req.body)
+  return TrainRoute.create(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
@@ -90,7 +89,7 @@ export function update(req, res) {
   if (req.body._id) {
     delete req.body._id;
   }
-  return Train.findById(req.params.id).exec()
+  return TrainRoute.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(saveUpdates(req.body))
     .then(respondWithResult(res))
@@ -99,7 +98,7 @@ export function update(req, res) {
 
 // Deletes a Train from the DB
 export function destroy(req, res) {
-  return Train.findById(req.params.id).exec()
+  return TrainRoute.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
