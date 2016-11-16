@@ -25,8 +25,6 @@
     to determine the lateness in minutes that the student is entitled to
   9. Persists the results back into another mongo collection
 
-  TODO: actually implement this algorithm
-
   Run it like this on a cron:
   $ npm run fetch-lateness
 */
@@ -41,13 +39,13 @@ const apiKey = require('../config/local.env').apiKey;
 const config = require('../config/environment/development');
 const User = require('../api/user/user.model').default;
 const db = mongoose.connect(config.mongo.uri, config.mongo.options);
-require("babel-polyfill");
+require('babel-polyfill');
 
 const defaultStationWalkingTime = 5 * 60 * 1000;
 
 const mockDestinations = [
-  { stop_id: 12345, hard_stop_time: "7:50" },
-  { stop_id: 12347, hard_stop_time: "7:54" }
+  { stop_id: 12345, hard_stop_time: '7:50' },
+  { stop_id: 12347, hard_stop_time: '7:54' }
 ];
 
 // use the same broad time window to MBTA for better cacheing
@@ -94,6 +92,7 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
 
     // TODO: look in the cache
 
+    const comments = [];
     const url = `${urlRoot}?${qs.stringify(query)}`;
     // TODO: query a larger window that we're going to look at,
     // and we have to consider the first train that arrives more than
@@ -113,7 +112,7 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
       const firstDepartureTimeAfterWindow = _.min(_.map(routesAfterWindow, (route) => {
         return _.parseInt(route.dep_dt * 1000);
       }));
-      // console.log(`Student might have taken the ${formattedDepart} train`);
+      comments.push(`Student might have taken the ${firstDepartureTimeAfterWindow} train`);
 
       const applicableRoutes = _.filter(travelTimes, (route) => {
         const startTime = _.parseInt(route.dep_dt * 1000);
@@ -122,19 +121,21 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
       const lastArrivalRoute = _.last(_.sortBy(applicableRoutes,
         (time) => _.parseInt(time.arr_dt))
       );
-      const formattedDepart = moment(lastArrivalRoute.dep_dt * 1000).format("h:mm");
-      const formattedArrival = moment(lastArrivalRoute.arr_dt * 1000).format("h:mm");
+      const formattedDepart = moment(lastArrivalRoute.dep_dt * 1000).format('h:mm');
+      const formattedArrival = moment(lastArrivalRoute.arr_dt * 1000).format('h:mm');
       const lateness = _.parseInt(lastArrivalRoute.travel_time_sec) -
         _.parseInt(lastArrivalRoute.benchmark_travel_time_sec);
       const latenessMessage = lateness < 0 ?
-        "on time" :
+        'on time' :
         `${_.parseInt(lateness / 60)} minutes late`;
-      const message = `The ${formattedDepart} from ${stop.from_stop_id} was ${latenessMessage} ` +
-        `and arrived at ${formattedArrival}`;
+      comments.push(`The ${formattedDepart} from ${stop.from_stop_id} was ${latenessMessage} ` +
+        `and arrived at ${formattedArrival}`);
 
-      console.log(message);
       const lastArrival = _.max(_.map(applicableRoutes, (time) => _.parseInt(time.arr_dt)));
-      resolve(lastArrival + defaultStationWalkingTime);
+      resolve({
+        comments,
+        arrival: lastArrival + defaultStationWalkingTime
+      });
     });
   });
 }
@@ -146,28 +147,35 @@ function run(dateString) {
       const arrivalTimes = [];
       for (const user of users) {
         const journeyStart = user.journey_start_time;
-        const [journeyStartHours, journeyStartMinutes] = journeyStart.split(":");
+        const [journeyStartHours, journeyStartMinutes] = journeyStart.split(':');
         const date = dateString ? new Date(dateString) : new Date();
         const windowEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(),
           journeyStartHours, journeyStartMinutes, 0);
         let windowEndMillis = windowEnd.getTime();
-        console.log("start end window", windowEndMillis, windowEnd.toString());
         let windowStartMillis = windowEndMillis - (1000 * 60 * 30);
+        let comments = [];
         for (const stop of user.stops) {
-          windowEndMillis = yield fetchLateness(stop, windowStartMillis, windowEndMillis);
+          const result =  yield fetchLateness(stop, windowStartMillis, windowEndMillis);
+          windowEndMillis = result.arrival;
+          comments = comments.concat(result.comments);
           windowStartMillis = windowEndMillis - (1000 * 60 * 30);
         }
-        arrivalTimes.push({ name: user.name, arrivalTime: windowEndMillis });
+        arrivalTimes.push({
+          name: user.name,
+          arrivalTime: windowEndMillis,
+          comments
+        });
       }
       db.disconnect();
       resolve(arrivalTimes);
     }).catch((error) => {
-      console.error("error", error);
+      console.error('error', error);
       db.disconnect();
       reject(error);
     });
   });
 }
 
+exports.defaultStationWalkingTime = defaultStationWalkingTime;
 exports.fetchLateness = fetchLateness;
 exports.run = run;
