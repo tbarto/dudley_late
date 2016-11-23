@@ -41,12 +41,7 @@ const User = require('../api/user/user.model').default;
 const db = mongoose.connect(config.mongo.uri, config.mongo.options);
 require('babel-polyfill');
 
-const defaultStationWalkingTime = 5 * 60 * 1000;
-
-const mockDestinations = [
-  { stop_id: 12345, hard_stop_time: '7:50' },
-  { stop_id: 12347, hard_stop_time: '7:54' }
-];
+const defaultStationWalkingTime = 3 * 60;
 
 // use the same broad time window to MBTA for better cacheing
 const morningStart = new Date().setHours(5, 0, 0, 0);
@@ -64,17 +59,18 @@ function fetchUsers() {
       }
 
       resolve(_.map(users, (user) => {
-        return _.pick(user, ['name', 'school', 'stops', 'journey_start_time']);
+        return _.pick(user, ['name', 'school', 'stops', 'journey_start_time',
+          'walk_to_school_minutes']);
       }));
     });
   });
 }
 
 //
-// Step 3: Hit the MBTA API to determine train delays
+// Steps 2-4: Hit the MBTA API to determine train delays
 //
 const urlRoot = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes';
-function fetchLateness(stop, fromDatetime, toDatetime) {
+function fetchLateness(stop, fromDatetime, toDatetime, studentName) {
   return new Promise((resolve, reject) => {
     if (stop.walking_time_minutes) {
       resolve(toDatetime + (stop.walking_time_minutes * 60 * 1000));
@@ -90,20 +86,18 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
       to_datetime: morningEnd
     };
 
-    // TODO: look in the cache
-
     const comments = [];
     const url = `${urlRoot}?${qs.stringify(query)}`;
-    // TODO: query a larger window that we're going to look at,
-    // and we have to consider the first train that arrives more than
-    // 5 minutes after the worst-case time
+
+    //
+    // We hit the MBTA API for the whole morning (TODO: cache the result)
+    // then we use our own logic to determine the exact window we care about
+    //
     request(url, (err, response, body) => {
       const travelTimes = JSON.parse(body).travel_times;
       if (_.isEmpty(travelTimes)) {
-        // XXX uhoh
-        reject('No travel times found');
+        reject('Could not find any routes in time window');
       }
-      // TODO: add to the cache
 
       const routesAfterWindow = _.filter(travelTimes, (route) => {
         const startTime = _.parseInt(route.dep_dt) * 1000;
@@ -112,33 +106,44 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
       const firstDepartureTimeAfterWindow = _.min(_.map(routesAfterWindow, (route) => {
         return _.parseInt(route.dep_dt * 1000);
       }));
-      comments.push(`Student might have taken the ${firstDepartureTimeAfterWindow} train`);
+      const formattedFirstDepartureTime = moment(firstDepartureTimeAfterWindow).format('h:mm');
+      comments.push(`${studentName} might have taken the ${formattedFirstDepartureTime} ` +
+        `from ${stop.from_stop_name}`);
 
       const applicableRoutes = _.filter(travelTimes, (route) => {
         const startTime = _.parseInt(route.dep_dt * 1000);
         return startTime >= fromDatetime && startTime <= firstDepartureTimeAfterWindow;
       });
       if (_.isEmpty(applicableRoutes)) {
-        reject("Could not find any routes in time window");
+        reject('Could not find any routes in time window');
         return;
       }
       const lastArrivalRoute = _.last(_.sortBy(applicableRoutes,
         (time) => _.parseInt(time.arr_dt))
       );
+      if (lastArrivalRoute.dep_dt * 1000 !== firstDepartureTimeAfterWindow) {
+        // corner case
+        comments.push(`The ${moment(firstDepartureTimeAfterWindow).format('h:mm')} ` +
+          `actually arrived after the ${moment(firstDepartureTimeAfterWindow).format('h:mm')} ` +
+          'even though it left earlier, so we\'ll give the student the benefit of ' +
+          'the doubt and assume that they took that one');
+      }
       const formattedDepart = moment(lastArrivalRoute.dep_dt * 1000).format('h:mm');
       const formattedArrival = moment(lastArrivalRoute.arr_dt * 1000).format('h:mm');
       const lateness = _.parseInt(lastArrivalRoute.travel_time_sec) -
         _.parseInt(lastArrivalRoute.benchmark_travel_time_sec);
-      const latenessMessage = lateness < 0 ?
+      const latenessMessage = lateness <= 0 ?
         'on time' :
         `${_.parseInt(lateness / 60)} minutes late`;
-      comments.push(`The ${formattedDepart} from ${stop.from_stop_id} was ${latenessMessage} ` +
+      comments.push(`The ${formattedDepart} from ${stop.from_stop_name} was ${latenessMessage} ` +
         `and arrived at ${formattedArrival}`);
 
       const lastArrival = _.max(_.map(applicableRoutes, (time) => _.parseInt(time.arr_dt)));
+      const effectiveArrival = lastArrival + defaultStationWalkingTime;
+
       resolve({
         comments,
-        arrival: lastArrival + defaultStationWalkingTime
+        arrival: effectiveArrival
       });
     });
   });
@@ -159,21 +164,26 @@ function run(dateString) {
         let windowStartMillis = windowEndMillis - (1000 * 60 * 30);
         let comments = [];
         for (const stop of user.stops) {
-          const result =  yield fetchLateness(stop, windowStartMillis, windowEndMillis);
-          windowEndMillis = result.arrival;
+          const result =  yield fetchLateness(stop, windowStartMillis, windowEndMillis, user.name);
+          windowEndMillis = result.arrival * 1000;
           comments = comments.concat(result.comments);
           windowStartMillis = windowEndMillis - (1000 * 60 * 30);
         }
+        const arrivalTime = windowEndMillis
+          + (user.walk_to_school_minutes * 60 * 1000)
+          - (defaultStationWalkingTime * 1000);
+        comments.push(`From there it's a ${user.walk_to_school_minutes} walk to school, ` +
+          `so the estimated arrival time to school is ${moment(arrivalTime).format('h:mm')}.`);
         arrivalTimes.push({
           name: user.name,
-          arrivalTime: windowEndMillis,
+          arrivalTime,
           comments
         });
       }
+      // TODO: persist arrivalTimes to the mongo
       db.disconnect();
       resolve(arrivalTimes);
     }).catch((error) => {
-      console.error('error', error);
       db.disconnect();
       reject(error);
     });

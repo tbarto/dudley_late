@@ -92,10 +92,26 @@ const mockUsers = [
   {
     name: 'Roslindale Jack',
     journey_start_time: '6:30',
+    walk_to_school_minutes: 4,
     stops: [
-      { from_stop_id: 635, to_stop_id: 10642 },
-      { from_stop_id: 70001, to_stop_id: 70011 },
-      { from_stop_id: 17863, to_stop_id: 1488 }
+      {
+        from_stop_id: 635,
+        from_stop_name: "Washington St",
+        to_stop_id: 10642,
+        to_stop_name: "Andrew Square"
+      },
+      {
+        from_stop_id: 70001,
+        from_stop_name: "Andrew Square",
+        to_stop_id: 70011,
+        to_stop_name: "Dudley Station"
+      },
+      {
+        from_stop_id: 17863,
+        from_stop_name: "Dudley Station",
+        to_stop_id: 1488,
+        to_stop_name: "Dorchester Avenue"
+      }
     ]
   }
 ];
@@ -116,10 +132,11 @@ const lateness = proxyquire('../server/scripts/fetch-lateness', {
 
 describe('lateness algorithm', () => {
   it('runs', (done) => {
-    lateness.run('2016-11-15').then((result) => {
+    lateness.run('2016-11-15T00:00:00').then((result) => {
       assert.equal(result[0].name, 'Roslindale Jack');
-      assert.equal(result[0].arrivalTime, 1479513200);
-      console.log(result[0].comments);
+      assert.equal(result[0].arrivalTime, 1479213793000);
+      assert.include(result[0].comments,
+        'The 7:00 from Washington St was 5 minutes late and arrived at 7:13');
       done();
     }, (error) => {
       console.error('error', error);
