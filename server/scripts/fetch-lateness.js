@@ -118,6 +118,10 @@ function fetchLateness(stop, fromDatetime, toDatetime) {
         const startTime = _.parseInt(route.dep_dt * 1000);
         return startTime >= fromDatetime && startTime <= firstDepartureTimeAfterWindow;
       });
+      if (_.isEmpty(applicableRoutes)) {
+        reject("Could not find any routes in time window");
+        return;
+      }
       const lastArrivalRoute = _.last(_.sortBy(applicableRoutes,
         (time) => _.parseInt(time.arr_dt))
       );

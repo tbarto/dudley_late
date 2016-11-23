@@ -116,7 +116,7 @@ const lateness = proxyquire('../server/scripts/fetch-lateness', {
 
 describe('lateness algorithm', () => {
   it('runs', (done) => {
-    lateness.run().then((result) => {
+    lateness.run('2016-11-15').then((result) => {
       assert.equal(result[0].name, 'Roslindale Jack');
       assert.equal(result[0].arrivalTime, 1479513200);
       console.log(result[0].comments);
