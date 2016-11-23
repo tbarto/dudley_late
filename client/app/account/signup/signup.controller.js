@@ -1,52 +1,60 @@
-'use strict';
+(function() {
+  'use strict';
+  class signUpController {
 
-class SignupController {
-  //end-non-standard
 
-  constructor(Auth, $state, $http) {
+    //end-non-standard
+
+    constructor(Auth, $state, TrainRoutes) {
       this.Auth = Auth;
       this.$state = $state;
-      this.$http = $http;
       this.stopData = [];
-      // ToDo this needs to be set a collection
+      // ToDo this needs to be added as a collection
       this.schools = ['School 1', 'School 2', 'School 3'];
-    }
-    //start-non-standard
-
-  $onInit() {
-    this.$http.get('/api/things')
-      .then(response => {
-        this.awesomeThings = response.data;
+      this.stops = [];
+      this.modes = [];
+      this.selectedMode = "Bus";
+      this.selectedLine = "CT1";
+      TrainRoutes.query().$promise.then(data => {
+        this.trainRoutes = data;
       });
-  }
+      // this.$http.get('api/trainRoutes').then(result => {
+      //     this.stops = result.data;
+      //     console.log(this.stops);
+      //     _.forEach(this.stops, stop => {
+      //         this.modes.push(stop.mode);
+      //     });
+      //     this.modes = _.uniq(this.modes);
+      // })
+    }
 
-  register(form) {
-    this.submitted = true;
-    if (form.$valid) {
-      this.Auth.createUser({
+    register(form) {
+      this.submitted = true;
+      if (form.$valid) {
+        this.Auth.createUser({
           name: this.user.name,
           email: this.user.email,
           password: this.user.password,
           school: this.user.school,
           studentId: this.user.userId
         })
-        .then(() => {
-          // Account created, redirect to home
-          this.$state.go('main');
-        })
-        .catch(err => {
-          err = err.data;
-          this.errors = {};
+          .then(() => {
+            // Account created, redirect to home
+            this.$state.go('main');
+          })
+          .catch(err => {
+            err = err.data;
+            this.errors = {};
 
-          // Update validity of form fields that match the mongoose errors
-          angular.forEach(err.errors, (error, field) => {
-            form[field].$setValidity('mongoose', false);
-            this.errors[field] = error.message;
+            // Update validity of form fields that match the mongoose errors
+            angular.forEach(err.errors, (error, field) => {
+              form[field].$setValidity('mongoose', false);
+              this.errors[field] = error.message;
+            });
           });
-        });
+      }
     }
   }
-}
-
-angular.module('tTimeApp')
-  .controller('SignupController', SignupController);
+  angular.module('tTimeApp')
+    .controller('signUpController', signUpController)
+}());

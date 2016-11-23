@@ -1,13 +1,11 @@
 node_modules
-server/config/
 public
 .tmp
 .idea
 client/bower_components
 dist
-/server/config/local.env.js
 npm-debug.log
 coverage
 data
-config.json
-
+q
+server/config/local.env.js

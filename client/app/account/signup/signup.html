@@ -27,15 +27,42 @@
           </p>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">
-          <label>Line</label>
-          <select  name="stop" ng-model="vm.user.stop" required>
-            <option ng-repeat="school in vm.schools" value="{{school}}">{{school}}</option>
+        <div class="form-group" >
+          <label>Mode</label>
+          <select  name="mode" ng-model="vm.selectedMode">
+            <option ng-repeat="mode in vm.modes" value="{{mode}}">{{mode}}</option>
           </select>
-          <p class="help-block" ng-show="form.stop.$error.required && vm.submitted">
-            A stop is required
-          </p>
         </div>
+
+        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
+          <!--<label>Line</label>-->
+          <!--<select  name="stop" ng-model="vm.selectedLine" required>-->
+            <!--<option ng-repeat="line in vm.stops | filter: vm.selectedMode" value="{{line.route_id}}">{{line.route}}</option>-->
+          <!--</select>-->
+          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
+            <!--A line is required-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
+          <!--<label>Start</label>-->
+          <!--<select ng-options="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLni" name="stop" ng-model="vm.userStart" required>-->
+            <!--<option ng-repeat="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLine" value="{{routeStop}}">{{stop.stops.stop_id}}</option>-->
+          <!--</select>-->
+          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
+            <!--A stop is required-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
+          <!--<label>Stop</label>-->
+          <!--<select  name="stop" ng-model="vm.user.stop" required>-->
+            <!--<option ng-repeat="stop in vm.stops | filter: vm.selectedMode" value="{{stop.route_id}}">{{stop.route}}</option>-->
+          <!--</select>-->
+          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
+            <!--A stop is required-->
+          <!--</p>-->
+        <!--</div>-->
 
         <div class="form-group" ng-class="{ 'has-success': form.userId.$valid && vm.submitted,
                                             'has-error': form.userId.$invalid && vm.submitted }">
