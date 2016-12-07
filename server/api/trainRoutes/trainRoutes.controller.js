@@ -11,10 +11,7 @@
 
 import _ from 'lodash';
 import TrainRoute from './trainRoutes.model';
-var request = require('request');
 
-// Runs everyday to get the UTC times for
-// function getUtcTimes(day):
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
   return function(entity) {

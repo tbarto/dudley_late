@@ -1,21 +1,17 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/Trains              ->  index
- * POST    /api/Trains              ->  create
- * GET     /api/Trains/:id          ->  show
- * PUT     /api/Trains/:id          ->  update
- * DELETE  /api/Trains/:id          ->  destroy
+ * GET     /api/school         ->  index
+ * POST    /api/school         ->  create
+ * GET     /api/school/:id     ->  show
+ * PUT     /api/school/:id     ->  update
+ * DELETE  /api/school/:id     ->  destroy
  */
 
 'use strict';
 
 import _ from 'lodash';
-import Train from './train.model';
-var request = require('request');
-var config = require('../../config/local.env');
+import School from './school.model';
 
-// Runs everyday to get the UTC times for
-// function getUtcTimes(day):
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
   return function(entity) {
@@ -65,14 +61,14 @@ function handleError(res, statusCode) {
 
 // Gets a list of Trains
 export function index(req, res) {
-  return Train.find().exec()
+  return School.find().lean().exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
 // Gets a single Train from the DB
 export function show(req, res) {
-  return Train.findById(req.params.id).exec()
+  return School.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
@@ -80,7 +76,7 @@ export function show(req, res) {
 
 // Creates a new Train in the DB
 export function create(req, res) {
-  return Train.create(req.body)
+  return School.create(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
@@ -90,7 +86,7 @@ export function update(req, res) {
   if (req.body._id) {
     delete req.body._id;
   }
-  return Train.findById(req.params.id).exec()
+  return School.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(saveUpdates(req.body))
     .then(respondWithResult(res))
@@ -99,7 +95,7 @@ export function update(req, res) {
 
 // Deletes a Train from the DB
 export function destroy(req, res) {
-  return Train.findById(req.params.id).exec()
+  return School.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
