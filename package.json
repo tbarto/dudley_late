@@ -115,7 +115,7 @@
     "npm": "^2.14.20"
   },
   "scripts": {
-    "fetch-lateness": "babel-node server/scripts/fetch-lateness.js",
+    "fetch-lateness": "babel-node server/scripts/run-fetch-lateness.js",
     "test": "mocha --require babel-core/register test && gulp test",
     "update-webdriver": "node node_modules/protractor/bin/webdriver-manager update",
     "postinstall": "bower install",
