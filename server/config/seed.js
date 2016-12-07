@@ -5,6 +5,7 @@
 
 'use strict';
 import User from '../api/user/user.model';
+import School from '../api/school/school.model'
 import TrainRoute from '../api/trainRoutes/trainRoutes.model';
 import _ from 'lodash';
 import Promise from 'bluebird';
@@ -32,6 +33,20 @@ User.find({}).remove()
         console.log('finished populating users');
       });
   });
+
+// School.find({}).remove()
+//   .then(() => {
+//     School.create({
+//       schoolName: "Orchard Gardens"
+//     },
+//     {
+//       schoolName: "Jeremiah E. Burke"
+//     },
+//     {
+//       schoolName: "Dearborn"
+//     }
+//     )
+//   });
 
 
 // Migration Script for Train Routes
