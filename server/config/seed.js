@@ -34,19 +34,19 @@ User.find({}).remove()
       });
   });
 
-// School.find({}).remove()
-//   .then(() => {
-//     School.create({
-//       schoolName: "Orchard Gardens"
-//     },
-//     {
-//       schoolName: "Jeremiah E. Burke"
-//     },
-//     {
-//       schoolName: "Dearborn"
-//     }
-//     )
-//   });
+School.find({}).remove()
+  .then(() => {
+    School.create({
+      schoolName: "Orchard Gardens"
+    },
+    {
+      schoolName: "Jeremiah E. Burke"
+    },
+    {
+      schoolName: "Dearborn"
+    }
+    )
+  });
 
 
 // Migration Script for Train Routes

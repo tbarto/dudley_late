@@ -1,10 +1,10 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/school         ->  index
- * POST    /api/school         ->  create
- * GET     /api/school/:id     ->  show
- * PUT     /api/school/:id     ->  update
- * DELETE  /api/school/:id     ->  destroy
+ * GET     /api/School              ->  index
+ * POST    /api/School              ->  create
+ * GET     /api/School/:id          ->  show
+ * PUT     /api/School/:id          ->  update
+ * DELETE  /api/School/:id          ->  destroy
  */
 
 'use strict';
@@ -59,14 +59,14 @@ function handleError(res, statusCode) {
   };
 }
 
-// Gets a list of Trains
+// Gets a list of School
 export function index(req, res) {
   return School.find().lean().exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Gets a single Train from the DB
+// Gets a single School from the DB
 export function show(req, res) {
   return School.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
@@ -74,14 +74,14 @@ export function show(req, res) {
     .catch(handleError(res));
 }
 
-// Creates a new Train in the DB
+// Creates a new School in the DB
 export function create(req, res) {
   return School.create(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
 
-// Updates an existing Train in the DB
+// Updates an existing School in the DB
 export function update(req, res) {
   if (req.body._id) {
     delete req.body._id;
@@ -93,7 +93,7 @@ export function update(req, res) {
     .catch(handleError(res));
 }
 
-// Deletes a Train from the DB
+// Deletes a School from the DB
 export function destroy(req, res) {
   return School.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))

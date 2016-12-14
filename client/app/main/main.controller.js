@@ -12,6 +12,7 @@
   angular.module('tTimeApp')
     .component('main', {
       templateUrl: 'app/main/main.html',
-      controller: MainController
+      controller: MainController,
+      controllerAs: 'vm'
     });
 })();
