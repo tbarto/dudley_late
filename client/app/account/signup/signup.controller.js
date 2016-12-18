@@ -5,11 +5,12 @@
 
     //end-non-standard
 
-    constructor(Auth, $state, TrainRoutes, Schools) {
+    constructor(Auth, $state, $scope, TrainRoutes, Schools) {
       this.Auth = Auth;
       this.$state = $state;
       this.modes = [];
       const schools = Schools.query().$promise;
+
       const trains = TrainRoutes.query().$promise;
       Promise.all([schools, trains]).then((data) => {
         this.schools = data[0];
@@ -20,6 +21,11 @@
         });
         this.modes = _.uniq(this.modes);
       });
+
+      $scope.$watch("vm.selectLine", (oldValue, newValue) => {
+        console.log("the old value is", oldValue);
+        console.log("the new value is", newValue);
+      })
     }
 
     register(form) {

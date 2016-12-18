@@ -161,11 +161,17 @@
           <option value="">Select a line</option>
         </select>
       </div>
-      <div class="form-group">
-        <select class="form-control" ng-model="vm.startPosition" ng-options="option in vm.trainRoutes | filter : vm.selectedLine">
-          <option value="">Select a start</option>
-        </select>
-      </div>
+      {{vm.trainRoutes | filter : vm.selectLine}}
+      <!--<div class="form-group">-->
+        <!--<select class="form-control" ng-model="vm.startPosition" ng-options="option.stop_name as option for option in vm.trainRoutes.stops | filter : vm.selectedLine">-->
+          <!--<option value="">Select a start</option>-->
+        <!--</select>-->
+      <!--</div>-->
+      <!--<div class="form-group">-->
+        <!--<select class="form-control" ng-model="vm.startPosition" ng-options="option in vm.trainRoutes | filter : vm.selectedLine">-->
+          <!--<option value="">Select a start</option>-->
+        <!--</select>-->
+      <!--</div>-->
       {{vm.selectedLine}}
       <!--<div class="form-group" ng-class="{ 'has-success': form.school.$valid && vm.submitted,-->
                                             <!--'has-error': form.school.$invalid && vm.submitted }">-->
