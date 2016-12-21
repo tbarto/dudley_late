@@ -1,137 +1,194 @@
-<div class="container">
+<!--<div class="container">-->
+  <!--<div class="row">-->
+    <!--<div class="col-sm-12">-->
+      <!--<h1>Sign up</h1>-->
+    <!--</div>-->
+    <!--<div class="col-sm-12">-->
+      <!--<form class="form" name="form" ng-submit="vm.register(form)" novalidate>-->
+
+        <!--<div class="form-group" ng-class="{ 'has-success': form.name.$valid && vm.submitted,-->
+                                            <!--'has-error': form.name.$invalid && vm.submitted }">-->
+          <!--<label>Name</label>-->
+
+          <!--<input type="text" name="name" class="form-control" ng-model="vm.user.name"-->
+                 <!--required/>-->
+          <!--<p class="help-block" ng-show="form.name.$error.required && vm.submitted">-->
+            <!--A name is required-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{'has-error': form.userId.$invalid && vm.submitted}">-->
+          <!--<label>School</label>-->
+          <!--<select  name="school" ng-model="vm.user.school" required>-->
+            <!--<option ng-repeat="school in vm.schools" value="{{school}}">{{school}}</option>-->
+          <!--</select>-->
+          <!--<p class="help-block" ng-show="form.school.$error.required && vm.submitted">-->
+            <!--A school is required-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" >-->
+          <!--<label>Mode</label>-->
+          <!--<select  name="mode" ng-model="vm.selectedMode">-->
+            <!--<option ng-repeat="mode in vm.modes" value="{{mode}}">{{mode}}</option>-->
+          <!--</select>-->
+        <!--</div>-->
+
+        <!--&lt;!&ndash;<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">&ndash;&gt;-->
+          <!--&lt;!&ndash;<label>Line</label>&ndash;&gt;-->
+          <!--&lt;!&ndash;<select  name="stop" ng-model="vm.selectedLine" required>&ndash;&gt;-->
+            <!--&lt;!&ndash;<option ng-repeat="line in vm.stops | filter: vm.selectedMode" value="{{line.route_id}}">{{line.route}}</option>&ndash;&gt;-->
+          <!--&lt;!&ndash;</select>&ndash;&gt;-->
+          <!--&lt;!&ndash;<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">&ndash;&gt;-->
+            <!--&lt;!&ndash;A line is required&ndash;&gt;-->
+          <!--&lt;!&ndash;</p>&ndash;&gt;-->
+        <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+        <!--&lt;!&ndash;<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">&ndash;&gt;-->
+          <!--&lt;!&ndash;<label>Start</label>&ndash;&gt;-->
+          <!--&lt;!&ndash;<select ng-options="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLni" name="stop" ng-model="vm.userStart" required>&ndash;&gt;-->
+            <!--&lt;!&ndash;<option ng-repeat="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLine" value="{{routeStop}}">{{stop.stops.stop_id}}</option>&ndash;&gt;-->
+          <!--&lt;!&ndash;</select>&ndash;&gt;-->
+          <!--&lt;!&ndash;<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">&ndash;&gt;-->
+            <!--&lt;!&ndash;A stop is required&ndash;&gt;-->
+          <!--&lt;!&ndash;</p>&ndash;&gt;-->
+        <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+        <!--&lt;!&ndash;<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">&ndash;&gt;-->
+          <!--&lt;!&ndash;<label>Stop</label>&ndash;&gt;-->
+          <!--&lt;!&ndash;<select  name="stop" ng-model="vm.user.stop" required>&ndash;&gt;-->
+            <!--&lt;!&ndash;<option ng-repeat="stop in vm.stops | filter: vm.selectedMode" value="{{stop.route_id}}">{{stop.route}}</option>&ndash;&gt;-->
+          <!--&lt;!&ndash;</select>&ndash;&gt;-->
+          <!--&lt;!&ndash;<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">&ndash;&gt;-->
+            <!--&lt;!&ndash;A stop is required&ndash;&gt;-->
+          <!--&lt;!&ndash;</p>&ndash;&gt;-->
+        <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+        <!--<div class="form-group" ng-class="{ 'has-success': form.userId.$valid && vm.submitted,-->
+                                            <!--'has-error': form.userId.$invalid && vm.submitted }">-->
+          <!--<label>Student ID</label>-->
+            <!--<input type="text" name="userId" class="form-control" ng-model="vm.user.userId"-->
+                   <!--required/>-->
+            <!--<p class="help-block" ng-show="form.userId.$error.required && vm.submitted">-->
+              <!--A student ID is required-->
+            <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{ 'has-success': form.email.$valid && vm.submitted,-->
+                                            <!--'has-error': form.email.$invalid && vm.submitted }">-->
+          <!--<label>Email</label>-->
+
+          <!--<input type="email" name="email" class="form-control" ng-model="vm.user.email"-->
+                 <!--required-->
+                 <!--mongoose-error/>-->
+          <!--<p class="help-block" ng-show="form.email.$error.email && vm.submitted">-->
+            <!--Doesn't look like a valid email.-->
+          <!--</p>-->
+          <!--<p class="help-block" ng-show="form.email.$error.required && vm.submitted">-->
+            <!--What's your email address?-->
+          <!--</p>-->
+          <!--<p class="help-block" ng-show="form.email.$error.mongoose">-->
+            <!--{{ vm.errors.email }}-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{ 'has-success': form.password.$valid && vm.submitted,-->
+                                            <!--'has-error': form.password.$invalid && vm.submitted }">-->
+          <!--<label>Password</label>-->
+
+          <!--<input type="password" name="password" class="form-control" ng-model="vm.user.password"-->
+                 <!--ng-minlength="3"-->
+                 <!--required-->
+                 <!--mongoose-error/>-->
+          <!--<p class="help-block"-->
+             <!--ng-show="(form.password.$error.minlength || form.password.$error.required) && vm.submitted">-->
+            <!--Password must be at least 3 characters.-->
+          <!--</p>-->
+          <!--<p class="help-block" ng-show="form.password.$error.mongoose">-->
+            <!--{{ vm.errors.password }}-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="form-group" ng-class="{ 'has-success': form.confirmPassword.$valid && vm.submitted,-->
+                                            <!--'has-error': form.confirmPassword.$invalid && vm.submitted }">-->
+          <!--<label>Confirm Password</label>-->
+          <!--<input type="password" name="confirmPassword" class="form-control" ng-model="vm.user.confirmPassword"-->
+                 <!--match="vm.user.password"-->
+                 <!--ng-minlength="3" required/>-->
+          <!--<p class="help-block"-->
+             <!--ng-show="form.confirmPassword.$error.match && vm.submitted">-->
+            <!--Passwords must match.-->
+          <!--</p>-->
+        <!--</div>-->
+
+        <!--<div>-->
+          <!--<button class="btn btn-inverse btn-lg btn-register" type="submit">-->
+            <!--Sign up-->
+          <!--</button>-->
+        <!--</div>-->
+
+      <!--</form>-->
+    <!--</div>-->
+  <!--</div>-->
+  <!--<hr>-->
+<!--</div>-->
+<div class="container" style="width: 50%">
   <div class="row">
-    <div class="col-sm-12">
-      <h1>Sign up</h1>
-    </div>
-    <div class="col-sm-12">
-      <form class="form" name="form" ng-submit="vm.register(form)" novalidate>
-
-        <div class="form-group" ng-class="{ 'has-success': form.name.$valid && vm.submitted,
+    <h1>Signup</h1>
+    <p>Please create your student profile by filling in the form below. All fields are required</p>
+    <form class="form" name="form" ng-submit="vm.register(form)" novalidate>
+      <div class="form-group" ng-class="{ 'has-success': form.name.$valid && vm.submitted,
                                             'has-error': form.name.$invalid && vm.submitted }">
-          <label>Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Name" ng-model="vm.user.name" required/>
+        <p class="help-block" ng-show="form.name.$error.required && vm.submitted">
+          A name is required
+        </p>
+      </div>
+      <div class="form-group" ng-class="{ 'has-success': form.studentId.$valid && vm.submitted,
+                                            'has-error': form.studentId.$invalid && vm.submitted }">
+        <input type="text" name="studentId" class="form-control" placeholder="Student ID #" ng-model="vm.user.studentId" required/>
+        <p class="help-block" ng-show="form.studentId.$error.required && vm.submitted">
+          An ID is required
+        </p>
+      </div>
+      <div class="form-group">
+        <select class="form-control" ng-model="vm.transportMode" ng-options="option for option in vm.modes">
+          <option value="">Select a mode of transportation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <select class="form-control" ng-model="vm.selectedLine" ng-options="option.route_id as option.route for option in vm.trainRoutes | filter : vm.transportMode">
+          <option value="">Select a line</option>
+        </select>
+      </div>
+      {{vm.trainRoutes | filter : vm.selectLine}}
+      <!--<div class="form-group">-->
+        <!--<select class="form-control" ng-model="vm.startPosition" ng-options="option.stop_name as option for option in vm.trainRoutes.stops | filter : vm.selectedLine">-->
+          <!--<option value="">Select a start</option>-->
+        <!--</select>-->
+      <!--</div>-->
+      <!--<div class="form-group">-->
+        <!--<select class="form-control" ng-model="vm.startPosition" ng-options="option in vm.trainRoutes | filter : vm.selectedLine">-->
+          <!--<option value="">Select a start</option>-->
+        <!--</select>-->
+      <!--</div>-->
+      {{vm.selectedLine}}
+      <!--<div class="form-group" ng-class="{ 'has-success': form.school.$valid && vm.submitted,-->
+                                            <!--'has-error': form.school.$invalid && vm.submitted }">-->
+        <!--<label>School</label>-->
+        <!--<select name="school" ng-model="vm.user.school" required>-->
+          <!--<option ng-repeat="option in vm.schools">{{option.schoolName}}</option>-->
+        <!--</select>-->
+        <!--<p class="help-block" ng-show="form.school.$error.required && vm.submitted">-->
+          <!--A school is required-->
+        <!--</p>-->
+      <!--</div>-->
 
-          <input type="text" name="name" class="form-control" ng-model="vm.user.name"
-                 required/>
-          <p class="help-block" ng-show="form.name.$error.required && vm.submitted">
-            A name is required
-          </p>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': form.userId.$invalid && vm.submitted}">
-          <label>School</label>
-          <select  name="school" ng-model="vm.user.school" required>
-            <option ng-repeat="school in vm.schools" value="{{school}}">{{school}}</option>
-          </select>
-          <p class="help-block" ng-show="form.school.$error.required && vm.submitted">
-            A school is required
-          </p>
-        </div>
-
-        <div class="form-group" >
-          <label>Mode</label>
-          <select  name="mode" ng-model="vm.selectedMode">
-            <option ng-repeat="mode in vm.modes" value="{{mode}}">{{mode}}</option>
-          </select>
-        </div>
-
-        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
-          <!--<label>Line</label>-->
-          <!--<select  name="stop" ng-model="vm.selectedLine" required>-->
-            <!--<option ng-repeat="line in vm.stops | filter: vm.selectedMode" value="{{line.route_id}}">{{line.route}}</option>-->
-          <!--</select>-->
-          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
-            <!--A line is required-->
-          <!--</p>-->
-        <!--</div>-->
-
-        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
-          <!--<label>Start</label>-->
-          <!--<select ng-options="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLni" name="stop" ng-model="vm.userStart" required>-->
-            <!--<option ng-repeat="routeStop as stop.stops for stop in vm.stops | filter: vm.selectedLine" value="{{routeStop}}">{{stop.stops.stop_id}}</option>-->
-          <!--</select>-->
-          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
-            <!--A stop is required-->
-          <!--</p>-->
-        <!--</div>-->
-
-        <!--<div class="form-group" ng-class="{'has-error': form.stop.$invalid && vm.submitted}">-->
-          <!--<label>Stop</label>-->
-          <!--<select  name="stop" ng-model="vm.user.stop" required>-->
-            <!--<option ng-repeat="stop in vm.stops | filter: vm.selectedMode" value="{{stop.route_id}}">{{stop.route}}</option>-->
-          <!--</select>-->
-          <!--<p class="help-block" ng-show="form.stop.$error.required && vm.submitted">-->
-            <!--A stop is required-->
-          <!--</p>-->
-        <!--</div>-->
-
-        <div class="form-group" ng-class="{ 'has-success': form.userId.$valid && vm.submitted,
-                                            'has-error': form.userId.$invalid && vm.submitted }">
-          <label>Student ID</label>
-            <input type="text" name="userId" class="form-control" ng-model="vm.user.userId"
-                   required/>
-            <p class="help-block" ng-show="form.userId.$error.required && vm.submitted">
-              A student ID is required
-            </p>
-        </div>
-
-        <div class="form-group" ng-class="{ 'has-success': form.email.$valid && vm.submitted,
-                                            'has-error': form.email.$invalid && vm.submitted }">
-          <label>Email</label>
-
-          <input type="email" name="email" class="form-control" ng-model="vm.user.email"
-                 required
-                 mongoose-error/>
-          <p class="help-block" ng-show="form.email.$error.email && vm.submitted">
-            Doesn't look like a valid email.
-          </p>
-          <p class="help-block" ng-show="form.email.$error.required && vm.submitted">
-            What's your email address?
-          </p>
-          <p class="help-block" ng-show="form.email.$error.mongoose">
-            {{ vm.errors.email }}
-          </p>
-        </div>
-
-        <div class="form-group" ng-class="{ 'has-success': form.password.$valid && vm.submitted,
-                                            'has-error': form.password.$invalid && vm.submitted }">
-          <label>Password</label>
-
-          <input type="password" name="password" class="form-control" ng-model="vm.user.password"
-                 ng-minlength="3"
-                 required
-                 mongoose-error/>
-          <p class="help-block"
-             ng-show="(form.password.$error.minlength || form.password.$error.required) && vm.submitted">
-            Password must be at least 3 characters.
-          </p>
-          <p class="help-block" ng-show="form.password.$error.mongoose">
-            {{ vm.errors.password }}
-          </p>
-        </div>
-
-        <div class="form-group" ng-class="{ 'has-success': form.confirmPassword.$valid && vm.submitted,
-                                            'has-error': form.confirmPassword.$invalid && vm.submitted }">
-          <label>Confirm Password</label>
-          <input type="password" name="confirmPassword" class="form-control" ng-model="vm.user.confirmPassword"
-                 match="vm.user.password"
-                 ng-minlength="3" required/>
-          <p class="help-block"
-             ng-show="form.confirmPassword.$error.match && vm.submitted">
-            Passwords must match.
-          </p>
-        </div>
-
-        <div>
-          <button class="btn btn-inverse btn-lg btn-register" type="submit">
-            Sign up
-          </button>
-          <a class="btn btn-default btn-lg btn-login" ui-sref="login">
-            Login
-          </a>
-        </div>
-
-      </form>
-    </div>
+      <div>
+        <button class="btn btn-inverse btn-lg btn-register" type="submit">
+          Sign up
+        </button>
+      </div>
+    </form>
   </div>
-  <hr>
 </div>
