@@ -38,6 +38,7 @@ const mongoose = require('mongoose');
 const apiKey = require('../config/local.env').apiKey;
 const config = require('../config/environment/development');
 const User = require('../api/user/user.model').default;
+const Episode = require('../api/episodes/episodes.model').default;
 const db = mongoose.connect(config.mongo.uri, config.mongo.options);
 require('babel-polyfill');
 
@@ -152,7 +153,25 @@ function fetchLateness(stop, fromDatetime, toDatetime, studentName) {
 function run(dateString) {
   return new Promise((resolve, reject) => {
     co (function *() {
-      const users = yield fetchUsers();
+      let users = yield fetchUsers();
+      // XXX start hack
+      users = _.map(users, (user) => {
+        return _.assign({}, user, {
+          journey_start_time: "6:30",
+          stops: [
+            /*
+            TODO
+            {
+              from_stop_id: 635,
+              from_stop_name: "Washington St",
+              to_stop_id: 10642,
+              to_stop_name: "Andrew Square"
+            }
+            */
+          ]
+        });
+      });
+      // XXX end hack
       const arrivalTimes = [];
       for (const user of users) {
         const journeyStart = user.journey_start_time;
@@ -176,11 +195,13 @@ function run(dateString) {
           `so the estimated arrival time to school is ${moment(arrivalTime).format('h:mm')}.`);
         arrivalTimes.push({
           name: user.name,
-          arrivalTime,
-          comments
+          arrivalTime: new Date(/* FIXME arrivalTime */),
+          comments: _.map(comments, (comment) => {
+            return { text: comment };
+          })
         });
       }
-      // TODO: persist arrivalTimes to the mongo
+      yield Episode.create(arrivalTimes);
       db.disconnect();
       resolve(arrivalTimes);
     }).catch((error) => {
